@@ -1,0 +1,23 @@
+.namespace Test::
+
+.fun ok        
+        shift
+        istrue OK
+        false
+        ret
+    OK: true
+        ret
+    
+.fun is
+        shift
+        shift
+        iseq OK
+        false
+        ret
+    OK: true
+        ret
+
+.fun diag
+        shift
+        print
+        ret

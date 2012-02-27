@@ -1,0 +1,74 @@
+#!/usr/bin/env perl
+
+use v5.14;
+use warnings;
+
+use File::Find;
+use Getopt::Long qw(GetOptions);
+
+our $CurrentSource;
+sub report_error($) {
+    if ($CurrentSource) {
+        say shift, " at ", $CurrentSource, " line ", $.;
+    }
+    else {
+        say shift;
+    }
+}
+
+sub is_valid_namespace($) {
+    my $name = shift;
+    
+    $name =~ /^\w+(?::\w+)*$/;
+}
+
+sub is_valid_function_name($) {
+    my $name = shift;
+    $name =~ /^\w+$/;
+}
+
+my ($output_dir, $verbose, $help);
+my $ok = GetOptions(
+    "outdir=s" => \$output_dir,
+    "verbose" => \$verbose,
+    "help" => \$help
+);
+         
+my @sources;
+for my $source (@ARGV) {
+    if (-d $source) {
+        find(sub {
+            push @sources, $File::Find::name if /\.ys/;
+        }, $source);
+    }         
+    else {
+        push @sources, $source;
+    }     
+}
+
+for my $source (@sources) {
+    say "Compiling $source" if $verbose;
+
+    local $CurrentSource = $source;
+    open my $in, "<", $source or die "Can't open $source because of: $!";
+    
+    my $namespace;
+    my (%functions, $current_function);
+    while (<$in>) {
+        if (/^\.namespace(?:\s+(.*?))$/) {
+            $namespace = $1;
+            report_error "Missing namespace" unless defined $namespace;
+            report_error "Invalid namespace '$name'" unless is_valid_namespace($namespace);
+        }
+        
+        if (/^.fun(?:\s+(.*?))$/) {
+            my $name = $1;
+            report_error "Missing function name" unless defined $name;
+            report_error "Invalid function name" unless is_valid_function_name($name);
+            
+            $current_function = $name;
+        }
+    }
+    
+    close $in;
+}
