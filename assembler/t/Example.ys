@@ -1,0 +1,6 @@
+.namespace Example
+
+.fun <clinit>
+    iconst_2
+    print
+    return

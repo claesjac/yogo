@@ -20,4 +20,4 @@
 .fun diag
         shift
         print
-        return        
+        return

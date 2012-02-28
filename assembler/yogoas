@@ -27,7 +27,7 @@ sub is_valid_namespace($) {
 
 sub is_valid_function_name($) {
     my $name = shift;
-    $name =~ /^\w+$/;
+    $name =~ /^<?\w+>?$/;
 }
 
 sub trim {
@@ -100,7 +100,7 @@ for my $source (@sources) {
         }
         
         # Declares a new function/sub/method
-        if (/^.fun(?:\s+(.*?))$/) {
+        if (/^.fun(?:\s+(<?.*?>?))$/) {
             my $name = trim $1;
             report_error "Missing function name" unless defined $name;
             report_error "Invalid function name '$name'" unless is_valid_function_name($name);
@@ -126,7 +126,7 @@ for my $source (@sources) {
             report_error "Invalid instruction '$instr'" unless exists $Opcode{$instr};
                         
             push $ops, [$Opcode{$instr}->{code}];
-            $pc += 2;   
+            $pc++;   
             
             if ($Opcode{$instr}->{args}) {
                 my @args = split /\s*,\s*/, $_;
@@ -137,7 +137,7 @@ for my $source (@sources) {
                 for my $i (0..$#args) {
                     if ($Opcode{$instr}->{arg_types}->[$i] eq 'addr') {
                         push $ops->[-1], bless(\do {"\L$args[$i]"}, "Label");
-                        $pc += 2;
+                        $pc++;
                     }
                 }
             }
