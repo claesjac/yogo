@@ -1,23 +1,23 @@
-.namespace Test::
+.namespace Test
 
 .fun ok        
         shift
         istrue OK
         false
-        ret
+        return
     OK: true
-        ret
+        return
     
 .fun is
         shift
         shift
         iseq OK
         false
-        ret
+        return
     OK: true
-        ret
+        return
 
 .fun diag
         shift
         print
-        ret
+        return        

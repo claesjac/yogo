@@ -3,7 +3,10 @@
 use v5.14;
 use warnings;
 
+use Data::Dumper qw(Dumper);
 use File::Find;
+use File::Path qw(make_path);
+use File::Spec::Functions qw(catfile catdir splitpath);
 use Getopt::Long qw(GetOptions);
 
 our $CurrentSource;
@@ -27,18 +30,42 @@ sub is_valid_function_name($) {
     $name =~ /^\w+$/;
 }
 
-my ($output_dir, $verbose, $help);
+sub trim {
+    my $r = shift;
+    $r =~ s/\s//g;
+    return $r;
+}
+
+
+
+my ($base_obj_dir, $verbose, $help, $root_dir);
 my $ok = GetOptions(
-    "outdir=s" => \$output_dir,
+    "outdir=s" => \$base_obj_dir,
+    "root=s" => \$root_dir,
     "verbose" => \$verbose,
     "help" => \$help
 );
-         
+
+# Load bytecode defs
+my %Opcode;
+{
+    open my $in, "<", "vm/include/bytecode.h" or die "Can't open vm/include/bytecode.h beccause of: $!";
+    while (<$in>) {
+        chomp ;
+        my $line = trim($_);
+        if ($line =~ /^OPCODE\((\d+),(\w+),(\d+),(\w+(?:\|\w+)*)?\)/) {
+            my $arg_types = $4 || "";
+            $Opcode{lc $2} = { args => $3, arg_types => [split /\|/, $arg_types], code => int $1 };
+        }
+    }
+    close $in;
+}
+
 my @sources;
 for my $source (@ARGV) {
     if (-d $source) {
         find(sub {
-            push @sources, $File::Find::name if /\.ys/;
+            push @sources, $File::Find::name if /\.ys$/;
         }, $source);
     }         
     else {
@@ -48,27 +75,131 @@ for my $source (@ARGV) {
 
 for my $source (@sources) {
     say "Compiling $source" if $verbose;
-
+    
     local $CurrentSource = $source;
     open my $in, "<", $source or die "Can't open $source because of: $!";
     
     my $namespace;
-    my (%functions, $current_function);
+    my (%function, $current_function, $pc);
+    my $label;
+    my $ops;
     while (<$in>) {
+        chomp;
+        
+        # Skip comments
+        next if /^#/;
+        
+        # Declares a new named class
         if (/^\.namespace(?:\s+(.*?))$/) {
-            $namespace = $1;
+            report_error "Namespace already set" if defined $namespace;
+            undef $ops;
+            $namespace = trim $1;
             report_error "Missing namespace" unless defined $namespace;
-            report_error "Invalid namespace '$name'" unless is_valid_namespace($namespace);
+            report_error "Invalid namespace '$namespace'" unless is_valid_namespace($namespace);
+            next;
         }
         
+        # Declares a new function/sub/method
         if (/^.fun(?:\s+(.*?))$/) {
-            my $name = $1;
+            my $name = trim $1;
             report_error "Missing function name" unless defined $name;
-            report_error "Invalid function name" unless is_valid_function_name($name);
+            report_error "Invalid function name '$name'" unless is_valid_function_name($name);
             
             $current_function = $name;
+            $label = {};
+            $function{$name} = { labels => $label, ops => [] };
+            $ops = $function{$name}->{ops};
+            $pc = 0;
+            
+            next;        
         }
+
+        # Label
+        while (s/^\s+(\w+):\s*//) {
+            my $lbl = lc $1;
+            report_error "Label $lbl at line $. in $current_function is already defined" if exists $label->{$lbl};
+            $label->{$lbl} = $pc;
+        }       
+        
+        if (s/^\s*(\w+)\s*//) {
+            my $instr = lc $1;
+            report_error "Invalid instruction '$instr'" unless exists $Opcode{$instr};
+                        
+            push $ops, [$Opcode{$instr}->{code}];
+            $pc += 2;   
+            
+            if ($Opcode{$instr}->{args}) {
+                my @args = split /\s*,\s*/, $_;
+                my $e = $Opcode{$instr}->{args};
+                my $g = @args;
+                report_error "Invalid arg count, expected $e but got $g" unless $e == $g;
+                
+                for my $i (0..$#args) {
+                    if ($Opcode{$instr}->{arg_types}->[$i] eq 'addr') {
+                        push $ops->[-1], bless(\do {"\L$args[$i]"}, "Label");
+                        $pc += 2;
+                    }
+                }
+            }
+        }        
+    }
+
+    close $in;
+
+    my (undef, $dirs, $file) = splitpath $source;
+    
+    $dirs =~ s/^\Q$root_dir\E// if $root_dir;
+    $file =~ s/\.ys$/.yo/;
+
+    $base_obj_dir = "." unless $base_obj_dir;
+    my $obj_dir = catdir($base_obj_dir, $dirs);
+    my $obj_path = catfile($obj_dir, $file);
+
+    make_path $obj_dir;
+    
+    open my $out, ">", $obj_path or die "Can't open $obj_path: $!";
+    
+    # Magic number (YOGO in ascii)
+    print $out pack("C4", 89, 79, 71, 79);
+    
+    # Version (major, minor)
+    print $out pack("C2", 0, 1);
+    
+    # If it has a namespace then write that
+    print $out pack("n", bytes::length $namespace);
+    print $out $namespace if $namespace;
+    
+    # constant pool (empty now)
+    print $out pack("n", 0);
+    
+    # number of functions
+    print $out pack("n", scalar keys %function);
+    
+    # write functions
+    for my $name (sort keys %function) {
+        my $ops = $function{$name}->{ops};
+        my $labels = $function{$name}->{labels};
+        
+        # Fix addresses
+        for my $op (@$ops) {
+            if (@$op > 1) {
+                for my $i (1..$#$op) {
+                    $op->[$i] = $labels->{${$op->[$i]}} if ref $op->[$i] eq "Label";
+                }
+            }
+        }
+        
+        my @data = map { @$_ } @$ops;
+        print $out pack("n", bytes::length $name);
+        print $out $name;
+        print $out pack("N", scalar @data);
+        print $out pack("n*", @data);
     }
     
-    close $in;
+    close $out;        
+}
+
+sub write_func {
+    my ($ops, $labels) = @_;
+    say Dumper($ops);
 }
