@@ -26,5 +26,8 @@ int main(int argc, char *argv[]) {
     }
     
     func = (YogoFunction *) *jv;
+    
+    func->callptr(main, func);
+    
     return 0;
 }

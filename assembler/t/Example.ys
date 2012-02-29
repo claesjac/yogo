@@ -2,5 +2,6 @@
 
 .fun <clinit>
     iconst_2
-    print
+    push "Hello world"
+    print 2
     return

@@ -24,6 +24,7 @@ YogoClass *load_class(const char *path) {
     char buffer[LOAD_BUFFER_SIZE];
     uint16_t major, minor, function_count;
     uint16_t length;
+    uint16_t *op_base;
     uint32_t op_count;
     uint32_t i;
     YogoClass *class;
@@ -104,6 +105,12 @@ YogoClass *load_class(const char *path) {
         if (fread(func->data, sizeof(uint16_t), op_count, in) != op_count) {
             REPORT_ERROR("Failed to read function ops for %s\n", func->name);
         }
+
+        /* Byteswap as it's stored in network byte order */
+        op_base = func->data;
+        for (i = 0; i < op_count; i++) {
+            op_base[i] = htons(op_base[i]);
+        }
         
         REPORT_INFO("Read function: %s\n", func->name);
         func->callptr = run_bytecode_interp;
@@ -112,6 +119,7 @@ YogoClass *load_class(const char *path) {
         if (function_element == PJERR) {
             REPORT_ERROR("Failed to create entry for function\n");
         }
+        
         *function_element = (unsigned long) func;
     }
     
