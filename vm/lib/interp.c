@@ -36,6 +36,6 @@ void run_bytecode_interp(YogoClass *class, YogoFunction *func) {
         }
     }
     
-    DONE: REPORT_INFO("Exiting from %s:%s\n", class->name, func->name);
-   
+DONE: 
+    REPORT_INFO("Exiting from %s:%s\n", class->name, func->name); 
 }

@@ -36,8 +36,6 @@ sub trim {
     return $r;
 }
 
-
-
 my ($base_obj_dir, $verbose, $help, $root_dir);
 my $ok = GetOptions(
     "outdir=s" => \$base_obj_dir,

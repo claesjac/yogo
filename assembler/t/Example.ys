@@ -1,7 +1,17 @@
 .namespace Example
 
+.cp 0   "Hello world"
+
 .fun <clinit>
+    iconst_2    
+    print 1
+    iconst_1
     iconst_2
-    push "Hello world"
+    call test
+    return
+    
+.fun test
+    shift
+    shift
     print 2
     return
