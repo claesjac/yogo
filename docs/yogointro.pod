@@ -1,0 +1,12 @@
+=pod
+
+=head1 NAME
+
+yogointro - a breif introduction and overview of Yogo
+
+=head1 DESCRIPTION
+
+#!/usr/bin/env yogo
+
+
+

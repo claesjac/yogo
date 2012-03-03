@@ -1,9 +1,13 @@
-/*  util.c
+/*  str.h
  *
  *  Copyright (C) 2012 by Claes Jakobsson
  *    
  *  You may distribute under the terms of MIT/X license, as specified in README and LICENSE
  */
+ 
+#ifndef __STR_H__
+#define __STR_H__
 
-#include "util.h"
+extern YogoValue* yogo_create_string(const char *str);
 
+#endif

@@ -1,15 +1,17 @@
-/*  op.h
+/*  loader.h
  *
  *  Copyright (C) 2012 by Claes Jakobsson
  *    
  *  You may distribute under the terms of MIT/X license, as specified in README and LICENSE
  */
 
-#ifndef __OP_H__
-#define __OP_H__
+#ifndef __LOADER_H__
+#define __LOADER_H__
 
 #include "class.h"
 
-#define OP(op) void op_ ## op(void *stack)
+YogoClass *load_class(const char *path);
+
+void yogo_init_classloader(YogoInterp* interp);
 
 #endif

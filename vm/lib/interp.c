@@ -1,13 +1,20 @@
-#include "interp.h"
-#include "error.h"
-#include "bytecode.h"
+/*  interp.c
+ *
+ *  Copyright (C) 2012 by Claes Jakobsson
+ *    
+ *  You may distribute under the terms of MIT/X license, as specified in README and LICENSE
+ */
 
+#include "yogo.h"
+
+#include "bytecode.h"
+#include "error.h"
 #include "op.h"
 #include "op_io.h"
 
 #include <stdint.h>
 
-void run_bytecode_interp(YogoClass *class, YogoFunction *func) {
+void run_bytecode_interp(pINTERP YogoClass *cls, YogoFunction *func) {
     uint16_t    *base_ptr = (uint16_t *) func->data;
     uint16_t    pc = 0;
     int64_t     ia, ib, ic;
@@ -15,8 +22,10 @@ void run_bytecode_interp(YogoClass *class, YogoFunction *func) {
     
     for(;;) {        
         uint16_t op = *(base_ptr + pc++);
+
         switch (op) {
             case OP_shift:
+                /* Expect top stack to be a list */
                 break;
             
             case OP_print:
@@ -25,17 +34,17 @@ void run_bytecode_interp(YogoClass *class, YogoFunction *func) {
             
             case OP_iconst_n1 ... OP_iconst_5:
                 ia = op - OP_iconst_n1 - 1;
-                REPORT_INFO("Pushing %lld onto stack\n", ia);
+                YOGO_REPORT_INFO("Pushing %lld onto stack\n", ia);
                 break;
             
             case OP_return:
                 goto DONE;
                 break;
             default:
-                REPORT_ERROR("Invalid opcode: %d\n", op);
+                YOGO_REPORT_ERROR("Invalid opcode: %d\n", op);
         }
     }
-    
+
 DONE: 
-    REPORT_INFO("Exiting from %s:%s\n", class->name, func->name); 
+    return;
 }

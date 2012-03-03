@@ -1,14 +1,25 @@
+/*  interp.h
+ *
+ *  Copyright (C) 2012 by Claes Jakobsson
+ *    
+ *  You may distribute under the terms of MIT/X license, as specified in README and LICENSE
+ */
+
 #ifndef __INTERP_H__
 #define __INTERP_H__
 
-#include "class.h"
+#define dINTERP YogoInterp*
+#define pINTERP dINTERP my_yogo, 
 
-struct YogoInterpreter {
+struct YogoClass;
+struct YogoFunction;
+
+struct YogoInterp {    
     int x;
 };
 
-typedef struct YogoInterpreter YogoInterpreter;
+typedef struct YogoInterp YogoInterp;
 
-void run_bytecode_interp(YogoClass *, YogoFunction *);
+void run_bytecode_interp(YogoInterp *, struct YogoClass *, struct YogoFunction *);
 
 #endif

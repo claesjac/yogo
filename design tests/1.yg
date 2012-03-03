@@ -1,0 +1,8 @@
+namespace Foo;
+
+sub foo {
+    map     x = shift;
+    list    l = shift;
+};
+
+1;

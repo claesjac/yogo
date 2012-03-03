@@ -1,8 +1,9 @@
-/*
-    (c) Claes Jakobsson 2012
-    
-    released under BSD license
-*/
+/*  error.h
+ *
+ *  Copyright (C) 2012 by Claes Jakobsson
+ *    
+ *  You may distribute under the terms of MIT/X license, as specified in README and LICENSE
+ */
 
 #ifndef __ERROR_H__
 #define __ERROR_H__
@@ -10,10 +11,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define REPORT_ERROR(...) \
+#define YOGO_REPORT_ERROR(...) \
     fprintf(stderr, __VA_ARGS__); \
     exit(1)
 
-#define REPORT_INFO(...) fprintf(stderr, __VA_ARGS__)
+#define YOGO_REPORT_INFO(...) fprintf(stderr, __VA_ARGS__)
 
 #endif
