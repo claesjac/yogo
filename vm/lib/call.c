@@ -8,10 +8,11 @@
 #include "yogo.h"
 
 void yogo_call_str(YogoInterp *interp, const char *name) {
-    YogoValue *t = yogo_pop_stack(interp);
+    YogoValue *t;
     YogoClass *cls;
     YogoFunction *func;
-    
+
+    t = yogo_pop_stack(interp);
     /* Find target class */
     if (YV_IS_STRING(t)) {
         cls = yogo_find_class(interp, yogo_get_string(t));;
@@ -31,8 +32,10 @@ void yogo_call_str(YogoInterp *interp, const char *name) {
     if (func == NULL) {
         YOGO_REPORT_ERROR("Unable to find function with name: %s", name);
     }
+    
+    yogo_call_method(interp, cls, func);
 }
 
 void yogo_call_method(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
-    
+    func->callptr(interp, cls, func);
 }

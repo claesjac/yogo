@@ -32,14 +32,14 @@ void yogo_init_classloader(YogoInterp *interp) {
     yogo_define_function(interp, c, "system_loader", system_loader_func);
     yogo_define_function(interp, c, "load", load_class_func);
     
-    yogo_define_class(interp, c, c->name);
+    yogo_define_class(interp, c->name, c);
 }
 
 void system_loader(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
-    
+    yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
 }
 
-void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
+void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
     FILE *in;
     char buffer[LOAD_BUFFER_SIZE];
     char *name;
@@ -48,11 +48,11 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
     uint16_t *op_base;
     uint32_t op_count;
     uint32_t i;
-    YogoClass *class;
-    YogoFunction *func;
-    Pvoid_t functions_array;
-    PWord_t function_element;
-    const char *path = "";
+    YogoClass *loaded_cls;
+    YogoFunction *loaded_func;
+
+    const char *path = yogo_get_string(yogo_pop_stack(interp));
+
     in = fopen(path, "r");
     if (in == NULL) {
         YOGO_REPORT_ERROR("Unable to load %s because of: %s\n", path, strerror(errno));
@@ -69,11 +69,7 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
     
     major = (int) buffer[4];
     minor = (int) buffer[5];
-    
-    class = calloc(1, sizeof(YogoClass));
-    
-    YOGO_REPORT_INFO("Version: %d.%d\n", major, minor);    
-
+        
     /* Name of class if any */
     memcpy(&length, buffer + 6, sizeof(uint16_t));
     length = htons(length);
@@ -82,11 +78,11 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
             YOGO_REPORT_ERROR("Failed to read name because of: %s\n", strerror(errno));
         }
         buffer[length] = '\0';
-        class->name = strdup(buffer);
+        name = strdup(buffer);
     }
 
-    YOGO_REPORT_INFO("Read classname: %s\n", class->name);
-
+    loaded_cls = yogo_create_class(interp, name);
+    
     /* Constant pool */
     if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
         YOGO_REPORT_ERROR("Failed to read constant pool length because of: %s\n", strerror(errno));
@@ -98,9 +94,7 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
     }
     memcpy(&function_count, buffer, sizeof(uint16_t));
     function_count = htons(function_count);
-    
-    functions_array = (PWord_t) NULL;
-    
+        
     for (i = 0; i < function_count; i++) {
         if (fread(&length, sizeof(uint16_t), 1, in) != 1) {
             YOGO_REPORT_ERROR("Failed to read function name length: %s", strerror(errno));
@@ -122,27 +116,25 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
             YOGO_REPORT_ERROR("Failed to read number of ops for %s\n", name);
         }
         op_count = htonl(op_count);
-        func->data = calloc(sizeof(uint16_t), op_count);
-        if (fread(func->data, sizeof(uint16_t), op_count, in) != op_count) {
+        op_base = calloc(sizeof(uint16_t), op_count);
+        if (fread(op_base, sizeof(uint16_t), op_count, in) != op_count) {
             YOGO_REPORT_ERROR("Failed to read function ops for %s\n", name);
         }
 
         /* Byteswap as it's stored in network byte order */
-        op_base = func->data;
         for (i = 0; i < op_count; i++) {
             op_base[i] = htons(op_base[i]);
         }
         
-        YOGO_REPORT_INFO("Read function: %s\n", name);
-        func->callptr = run_bytecode_interp;
-        
-        JSLI(function_element, functions_array, (const uint8_t *) name);
-        if (function_element == PJERR) {
-            YOGO_REPORT_ERROR("Failed to create entry for function\n");
-        }
-        
-        *function_element = (unsigned long) func;
+        loaded_func = yogo_create_native_function(interp, run_bytecode_interp, op_base);
+        yogo_define_function(interp, loaded_cls, name, loaded_func);
+        free(name);
+        free(op_base);
     }
     
-    class->functions = functions_array;    
+    yogo_define_class(interp, loaded_cls->name, loaded_cls);
+    
+    /* Initialize class */
+    yogo_push_stack(interp, yogo_create_string(loaded_cls->name));
+    yogo_call_str(interp, "<clinit>");
 }

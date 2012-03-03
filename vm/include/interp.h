@@ -23,10 +23,10 @@ struct YogoClass;
 struct YogoFunction;
 
 struct YogoInterp {    
-    YogoValue   *curr_stack_top;
+    YogoValue   **curr_stack_top;
+    YogoValue   **stack_max;
     YogoValue   **stack;
     uint32_t    stack_size;
-    uint32_t    stack_top;
     
     Pvoid_t     classes;
 };
@@ -42,7 +42,7 @@ extern void yogo_push_stack(YogoInterp *, YogoValue *);
 extern YogoValue *yogo_pop_stack(YogoInterp *);
 extern YogoValue *yogo_peek_stack(YogoInterp *);
 
-extern struct void yogo_define_class(YogoInterp, const char *, const YogoClass *);
+extern void yogo_define_class(YogoInterp *, const char *, struct YogoClass *);
 extern struct YogoClass *yogo_find_class(YogoInterp *, const char *);
 
 #endif

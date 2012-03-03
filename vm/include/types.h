@@ -12,16 +12,16 @@
 
 typedef enum {
     YVt_NULL = 0,    /* Undefined */
-    YVt_INTEGER,         /* Integer */
+    YVt_INTEGER,     /* Integer */
     YVt_DOUBLE,      /* Double */
-    YVt_REFERENCE,         /* Reference */
+    YVt_REFERENCE,   /* Reference */
     YVt_OBJECT,      /* Object */
     YVt_LIST,        /* List */
     YVt_MAP,         /* Map */
     YVt_STRING,      /* String */
 } YogoType;
 
-#define YVt_MASK 0x03
+#define YVt_MASK 0x7
 
 #define YV_IS_NULL(v) ((v->flags & YVt_MASK) == YVt_NULL)
 #define YV_IS_INTEGER(v) ((v->flags & YVt_MASK) == YVt_INTEGER)

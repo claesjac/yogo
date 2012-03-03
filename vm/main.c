@@ -13,10 +13,17 @@ static const char *clinit = "<clinit>";
     
 int main(int argc, char *argv[]) {
     YogoInterp *interp = yogo_create_interp();
-    
+    YogoValue *tmp;
+
     yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
     yogo_call_str(interp, "system_loader");
+    
+    tmp = yogo_pop_stack(interp);
+
     yogo_push_stack(interp, yogo_create_string(argv[1]));
+    YOGO_REPORT_INFO("1: %s\n", yogo_get_string(yogo_peek_stack(interp)));
+    yogo_push_stack(interp, tmp);
+    YOGO_REPORT_INFO("1: %s\n", yogo_get_string(yogo_peek_stack(interp)));
     yogo_call_str(interp, "load");
     
 /*    YogoClass *main;

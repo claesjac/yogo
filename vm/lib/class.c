@@ -35,5 +35,7 @@ YogoFunction *yogo_get_function(YogoInterp *interp, YogoClass *cls, const char *
 }
 
 void yogo_define_function(YogoInterp *interp, YogoClass *cls, const char *name, YogoFunction *func) {
-    JSLI(func, cls->functions, (const uint8_t *) name);    
+    PPvoid_t v;
+    JSLI(v, cls->functions, (const uint8_t *) name);    
+    *v = func;
 }
