@@ -6,45 +6,48 @@
  */
 
 #include "yogo.h"
-
-#include "bytecode.h"
 #include "error.h"
-#include "op.h"
-#include "op_io.h"
+#include "interp.h"
+#include "classloader.h"
 
-#include <stdint.h>
+#include <errno.h>
+#include <string.h>
 
-void run_bytecode_interp(pINTERP YogoClass *cls, YogoFunction *func) {
-    uint16_t    *base_ptr = (uint16_t *) func->data;
-    uint16_t    pc = 0;
-    int64_t     ia, ib, ic;
-    double      da, db, dc;
-    
-    for(;;) {        
-        uint16_t op = *(base_ptr + pc++);
-
-        switch (op) {
-            case OP_shift:
-                /* Expect top stack to be a list */
-                break;
-            
-            case OP_print:
-                op_print(NULL);
-                break;
-            
-            case OP_iconst_n1 ... OP_iconst_5:
-                ia = op - OP_iconst_n1 - 1;
-                YOGO_REPORT_INFO("Pushing %lld onto stack\n", ia);
-                break;
-            
-            case OP_return:
-                goto DONE;
-                break;
-            default:
-                YOGO_REPORT_ERROR("Invalid opcode: %d\n", op);
-        }
-    }
-
-DONE: 
-    return;
+static void S_init_standard_classes(YogoInterp *interp) {
+    yogo_init_classloader(interp);
 }
+
+YogoInterp *yogo_create_interp(void) {
+    YogoInterp *interp = calloc(1, sizeof(YogoInterp));
+    
+    yogo_grow_stack(interp, YOGO_DEFAULT_STACK_SIZE);
+    interp->curr_stack_top = *(interp->stack);
+
+    interp->classes = (Pvoid_t) NULL;
+    
+    S_init_standard_classes(interp);
+    
+    return interp;
+}
+
+void yogo_grow_stack(YogoInterp *interp, uint32_t count) {
+    uint32_t new_stack_size = interp->stack_size + count;
+    interp->stack = realloc(interp->stack, new_stack_size);
+    if (interp->stack == NULL) {
+        YOGO_REPORT_ERROR("Failed to increase stack size because of: %s", strerror(errno));
+    }
+    interp->stack_size = new_stack_size;
+}
+
+void yogo_push_stack(YogoInterp *interp, YogoValue *v) {
+    
+}
+
+YogoValue *yogo_pop_stack(YogoInterp *interp) {
+}
+
+YogoValue *yogo_peek_stack(YogoInterp *interp) {
+    
+}
+
+YogoValue *

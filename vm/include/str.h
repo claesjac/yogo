@@ -8,6 +8,7 @@
 #ifndef __STR_H__
 #define __STR_H__
 
-extern YogoValue* yogo_create_string(const char *str);
+extern YogoValue* yogo_create_string(const char *);
+extern const char *yogo_get_string(YogoValue *);
 
 #endif

@@ -6,16 +6,18 @@
 
 
 #include "yogo.h"
+#include "str.h"
+#include "call.h"
 
 static const char *clinit = "<clinit>";
     
 int main(int argc, char *argv[]) {
-    YogoInterp *interp = yogo_init();
+    YogoInterp *interp = yogo_create_interp();
     
-/*    yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
-    yogo_call(interp, "system_loader");
+    yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
+    yogo_call_str(interp, "system_loader");
     yogo_push_stack(interp, yogo_create_string(argv[1]));
-    yogo_call(interp, "load");*/
+    yogo_call_str(interp, "load");
     
 /*    YogoClass *main;
     YogoFunction *func;

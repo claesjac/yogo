@@ -6,11 +6,11 @@
  */
 
 #include "yogo.h"
-#include "class.h"
 
+#include <Judy.h>
 #include <string.h>
 
-YogoClass *yogo_create_class(pINTERP const char *name) {
+YogoClass *yogo_create_class(YogoInterp *interp, const char *name) {
     YogoClass *cls = calloc(1, sizeof(YogoClass));
     
     if (name != NULL) {
@@ -22,6 +22,18 @@ YogoClass *yogo_create_class(pINTERP const char *name) {
     return cls;
 }
 
-void yogo_bind_function(YogoInterp *interp, YogoClass *cls, const char *name, YogoFunction *func) {
+YogoFunction *yogo_get_function(YogoInterp *interp, YogoClass *cls, const char *name) {
+    PWord_t f;
     
+    JSLF(f, cls->functions, (uint8_t *) name);
+    if (f == NULL) {
+        YOGO_REPORT_INFO("Didn't find method, must traverse parents\n");
+        return NULL;
+    }
+    
+    return (YogoFunction *) *f;
+}
+
+void yogo_define_function(YogoInterp *interp, YogoClass *cls, const char *name, YogoFunction *func) {
+    JSLI(func, cls->functions, (const uint8_t *) name);    
 }

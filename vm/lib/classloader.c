@@ -29,8 +29,10 @@ void yogo_init_classloader(YogoInterp *interp) {
     system_loader_func = yogo_create_native_function(interp, system_loader, NULL);
     load_class_func = yogo_create_native_function(interp, load_class, NULL);
     
-    yogo_bind_function(interp, c, "system_loader", system_loader_func);
-    yogo_bind_function(interp, c, "load", load_class_func);
+    yogo_define_function(interp, c, "system_loader", system_loader_func);
+    yogo_define_function(interp, c, "load", load_class_func);
+    
+    yogo_define_class(interp, c, c->name);
 }
 
 void system_loader(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {

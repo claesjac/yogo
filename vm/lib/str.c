@@ -18,3 +18,12 @@ YogoValue *yogo_create_string(const char *str) {
     v->refcnt++;
     return v;
 }
+
+const char *yogo_get_string(YogoValue *v) {
+    if (YV_IS_STRING(v)) {
+        return (const char *) v->val.pval;
+    }
+    
+    /* TODO, stringify value */
+    return "";
+}

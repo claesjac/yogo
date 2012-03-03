@@ -8,16 +8,4 @@
 #include "yogo.h"
 #include "classloader.h"
 
-static void S_init_standard_classes(YogoInterp *interp) {
-    yogo_init_classloader(interp);
-}
-
-YogoInterp *yogo_init(void) {
-    YogoInterp *interp = calloc(1, sizeof(YogoInterp));
-    
-    S_init_standard_classes(interp);
-    
-    return interp;
-}
-
 

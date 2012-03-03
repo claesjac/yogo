@@ -21,6 +21,8 @@ struct YogoClass {
 typedef struct YogoClass YogoClass;
 
 extern YogoClass *yogo_create_class(YogoInterp *, const char *);
-extern void yogo_bind_function(YogoInterp *, YogoClass *, const char *name, YogoFunction *f);
+
+extern YogoFunction *yogo_get_function(YogoInterp *, YogoClass *, const char *);
+extern void yogo_define_function(YogoInterp *, YogoClass *, const char *, YogoFunction *f);
 
 #endif

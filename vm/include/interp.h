@@ -8,18 +8,41 @@
 #ifndef __INTERP_H__
 #define __INTERP_H__
 
+#include "types.h"
+#include <stdint.h>
+
+#include <Judy.h>
+
 #define dINTERP YogoInterp*
 #define pINTERP dINTERP my_yogo, 
+
+#define YOGO_DEFAULT_STACK_SIZE 32
+#define YOGO_DEFAULT_STACK_GROW 32
 
 struct YogoClass;
 struct YogoFunction;
 
 struct YogoInterp {    
-    int x;
+    YogoValue   *curr_stack_top;
+    YogoValue   **stack;
+    uint32_t    stack_size;
+    uint32_t    stack_top;
+    
+    Pvoid_t     classes;
 };
 
 typedef struct YogoInterp YogoInterp;
 
-void run_bytecode_interp(YogoInterp *, struct YogoClass *, struct YogoFunction *);
+extern YogoInterp *yogo_create_interp();
+
+extern void run_bytecode_interp(YogoInterp *, struct YogoClass *, struct YogoFunction *);
+
+extern void yogo_grow_stack(YogoInterp *, uint32_t);
+extern void yogo_push_stack(YogoInterp *, YogoValue *);
+extern YogoValue *yogo_pop_stack(YogoInterp *);
+extern YogoValue *yogo_peek_stack(YogoInterp *);
+
+extern struct void yogo_define_class(YogoInterp, const char *, const YogoClass *);
+extern struct YogoClass *yogo_find_class(YogoInterp *, const char *);
 
 #endif
