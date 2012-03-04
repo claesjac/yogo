@@ -8,11 +8,11 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
 
-struct YogoClass;
+struct YogoPackage;
 struct YogoInterp;
 struct YogoFuction;
 
-typedef void (*YogoNative)(struct YogoInterp *, struct YogoClass *cls, struct YogoFunction *func);
+typedef void (*YogoNative)(struct YogoInterp *, struct YogoPackage *cls, struct YogoFunction *func);
 
 struct YogoFunction {
     YogoNative callptr;

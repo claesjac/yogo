@@ -6,6 +6,6 @@
  */
 
 #include "yogo.h"
-#include "classloader.h"
+#include "loader.h"
 
 

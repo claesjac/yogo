@@ -1,5 +1,5 @@
 #include "yogo.h"
 
-YogoClass *yogo_get_class(YogoInterp *interp, YogoValue *obj) {
+YogoPackage *yogo_get_package(YogoInterp *interp, YogoValue *obj) {
     return NULL;
 }

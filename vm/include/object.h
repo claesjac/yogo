@@ -8,9 +8,9 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-struct YogoClass;
+struct YogoPackage;
 struct YogoValue;
  
-extern struct YogoClass *yogo_get_class(YogoInterp *, YogoValue *);
+extern struct YogoPackage *yogo_get_package(YogoInterp *, YogoValue *);
 
 #endif

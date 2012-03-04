@@ -14,7 +14,7 @@
 
 #include <stdint.h>
 
-void run_bytecode_interp(pINTERP YogoClass *cls, YogoFunction *func) {
+void run_bytecode_interp(pINTERP YogoPackage *cls, YogoFunction *func) {
     uint16_t    *base_ptr = (uint16_t *) func->data;
     uint16_t    pc = 0;
 

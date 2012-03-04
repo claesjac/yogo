@@ -8,10 +8,10 @@
 #ifndef __LOADER_H__
 #define __LOADER_H__
 
-#include "class.h"
+#include "package.h"
 
-YogoClass *load_class(const char *path);
+YogoPackage *load_package(const char *path);
 
-void yogo_init_classloader(YogoInterp* interp);
+void yogo_init_packageloader(YogoInterp* interp);
 
 #endif

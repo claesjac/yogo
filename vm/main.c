@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     YogoInterp *interp = yogo_create_interp();
     YogoValue *tmp;
 
-    yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
+    yogo_push_stack(interp, yogo_create_string("Yogo::Loader"));
     yogo_call_str(interp, "system_loader");
     
     tmp = yogo_pop_stack(interp);
@@ -26,11 +26,11 @@ int main(int argc, char *argv[]) {
     YOGO_REPORT_INFO("1: %s\n", yogo_get_string(yogo_peek_stack(interp)));
     yogo_call_str(interp, "load");
     
-/*    YogoClass *main;
+/*    YogoPackage *main;
     YogoFunction *func;
     PWord_t jv;
     
-    main = load_class(argv[1]);
+    main = load_package(argv[1]);
     YOGO_REPORT_INFO("Functions: %p\n", main->functions);
     
     JSLF(jv, main->functions, (uint8_t *) clinit);

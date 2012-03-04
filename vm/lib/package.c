@@ -10,8 +10,8 @@
 #include <Judy.h>
 #include <string.h>
 
-YogoClass *yogo_create_class(YogoInterp *interp, const char *name) {
-    YogoClass *cls = calloc(1, sizeof(YogoClass));
+YogoPackage *yogo_create_package(YogoInterp *interp, const char *name) {
+    YogoPackage *cls = calloc(1, sizeof(YogoPackage));
     
     if (name != NULL) {
         cls->name = strdup(name);
@@ -22,7 +22,7 @@ YogoClass *yogo_create_class(YogoInterp *interp, const char *name) {
     return cls;
 }
 
-YogoFunction *yogo_get_function(YogoInterp *interp, YogoClass *cls, const char *name) {
+YogoFunction *yogo_get_function(YogoInterp *interp, YogoPackage *cls, const char *name) {
     PWord_t f;
     
     JSLF(f, cls->functions, (uint8_t *) name);
@@ -34,7 +34,7 @@ YogoFunction *yogo_get_function(YogoInterp *interp, YogoClass *cls, const char *
     return (YogoFunction *) *f;
 }
 
-void yogo_define_function(YogoInterp *interp, YogoClass *cls, const char *name, YogoFunction *func) {
+void yogo_define_function(YogoInterp *interp, YogoPackage *cls, const char *name, YogoFunction *func) {
     PPvoid_t v;
     JSLI(v, cls->functions, (const uint8_t *) name);    
     *v = func;

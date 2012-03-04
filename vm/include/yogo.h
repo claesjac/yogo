@@ -6,7 +6,7 @@
  */
 
 #include "call.h"
-#include "class.h"
+#include "package.h"
 #include "error.h"
 #include "function.h"
 #include "interp.h"

@@ -8,13 +8,13 @@
 #include "yogo.h"
 #include "error.h"
 #include "interp.h"
-#include "classloader.h"
+#include "loader.h"
 
 #include <errno.h>
 #include <string.h>
 
-static void S_init_standard_classes(YogoInterp *interp) {
-    yogo_init_classloader(interp);
+static void S_init_standard_packagees(YogoInterp *interp) {
+    yogo_init_packageloader(interp);
 }
 
 YogoInterp *yogo_create_interp(void) {
@@ -25,7 +25,7 @@ YogoInterp *yogo_create_interp(void) {
 
     interp->classes = (Pvoid_t) NULL;
     
-    S_init_standard_classes(interp);
+    S_init_standard_packagees(interp);
     
     return interp;
 }
@@ -61,7 +61,7 @@ YogoValue *yogo_peek_stack(YogoInterp *interp) {
     return v; 
 }
 
-YogoClass *yogo_find_class(YogoInterp *interp, const char *name) {
+YogoPackage *yogo_find_package(YogoInterp *interp, const char *name) {
     PWord_t c;
         
     JSLF(c, interp->classes, (uint8_t *) name);
@@ -70,10 +70,10 @@ YogoClass *yogo_find_class(YogoInterp *interp, const char *name) {
         return NULL;
     }
     
-    return (YogoClass *) *c;    
+    return (YogoPackage *) *c;    
 }
 
-void yogo_define_class(YogoInterp *interp, const char *name, YogoClass *cls) {
+void yogo_define_package(YogoInterp *interp, const char *name, YogoPackage *cls) {
     PPvoid_t v;
     JSLI(v, interp->classes, (const uint8_t *) name);    
     *v = cls;

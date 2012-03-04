@@ -9,16 +9,16 @@
 
 void yogo_call_str(YogoInterp *interp, const char *name) {
     YogoValue *t;
-    YogoClass *cls;
+    YogoPackage *cls;
     YogoFunction *func;
 
     t = yogo_pop_stack(interp);
     /* Find target class */
     if (YV_IS_STRING(t)) {
-        cls = yogo_find_class(interp, yogo_get_string(t));;
+        cls = yogo_find_package(interp, yogo_get_string(t));;
     }
     else if (YV_IS_OBJECT(t)) {
-        cls = yogo_get_class(interp, t);
+        cls = yogo_get_package(interp, t);
     }
     else {
         cls = NULL;
@@ -36,6 +36,6 @@ void yogo_call_str(YogoInterp *interp, const char *name) {
     yogo_call_method(interp, cls, func);
 }
 
-void yogo_call_method(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
+void yogo_call_method(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
     func->callptr(interp, cls, func);
 }

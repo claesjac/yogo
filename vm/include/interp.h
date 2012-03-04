@@ -19,7 +19,7 @@
 #define YOGO_DEFAULT_STACK_SIZE 32
 #define YOGO_DEFAULT_STACK_GROW 32
 
-struct YogoClass;
+struct YogoPackage;
 struct YogoFunction;
 
 struct YogoInterp {    
@@ -35,14 +35,14 @@ typedef struct YogoInterp YogoInterp;
 
 extern YogoInterp *yogo_create_interp();
 
-extern void run_bytecode_interp(YogoInterp *, struct YogoClass *, struct YogoFunction *);
+extern void run_bytecode_interp(YogoInterp *, struct YogoPackage *, struct YogoFunction *);
 
 extern void yogo_grow_stack(YogoInterp *, uint32_t);
 extern void yogo_push_stack(YogoInterp *, YogoValue *);
 extern YogoValue *yogo_pop_stack(YogoInterp *);
 extern YogoValue *yogo_peek_stack(YogoInterp *);
 
-extern void yogo_define_class(YogoInterp *, const char *, struct YogoClass *);
-extern struct YogoClass *yogo_find_class(YogoInterp *, const char *);
+extern void yogo_define_package(YogoInterp *, const char *, struct YogoPackage *);
+extern struct YogoPackage *yogo_find_package(YogoInterp *, const char *);
 
 #endif

@@ -8,10 +8,10 @@
 #ifndef __CALL_H__
 #define __CALL_H__
 
-#include "class.h"
+#include "package.h"
 #include "interp.h"
 
-extern void yogo_call_method(YogoInterp *, YogoClass *, YogoFunction *);
+extern void yogo_call_method(YogoInterp *, YogoPackage *, YogoFunction *);
 extern void yogo_call_str(YogoInterp *, const char *);
 
 #endif

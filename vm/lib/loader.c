@@ -18,28 +18,28 @@
 
 static const char *MAGIC_IDENTIFIER = "YOGO";
 
-static void system_loader(YogoInterp *, YogoClass *c, YogoFunction *f);
-static void load_class(YogoInterp *, YogoClass *c, YogoFunction *f);
+static void system_loader(YogoInterp *, YogoPackage *c, YogoFunction *f);
+static void load_package(YogoInterp *, YogoPackage *c, YogoFunction *f);
 
-void yogo_init_classloader(YogoInterp *interp) {
-    YogoClass *c;
-    YogoFunction *system_loader_func, *load_class_func;
+void yogo_init_packageloader(YogoInterp *interp) {
+    YogoPackage *c;
+    YogoFunction *system_loader_func, *load_package_func;
     
-    c = yogo_create_class(interp, "Yogo::ClassLoader");
+    c = yogo_create_package(interp, "Yogo::Loader");
     system_loader_func = yogo_create_native_function(interp, system_loader, NULL);
-    load_class_func = yogo_create_native_function(interp, load_class, NULL);
+    load_package_func = yogo_create_native_function(interp, load_package, NULL);
     
     yogo_define_function(interp, c, "system_loader", system_loader_func);
-    yogo_define_function(interp, c, "load", load_class_func);
+    yogo_define_function(interp, c, "load", load_package_func);
     
-    yogo_define_class(interp, c->name, c);
+    yogo_define_package(interp, c->name, c);
 }
 
-void system_loader(YogoInterp *interp, YogoClass *cls, YogoFunction *f) {
-    yogo_push_stack(interp, yogo_create_string("Yogo::ClassLoader"));
+void system_loader(YogoInterp *interp, YogoPackage *cls, YogoFunction *f) {
+    yogo_push_stack(interp, yogo_create_string("Yogo::Loader"));
 }
 
-void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
+void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
     FILE *in;
     char buffer[LOAD_BUFFER_SIZE];
     char *name;
@@ -48,7 +48,7 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
     uint16_t *op_base;
     uint32_t op_count;
     uint32_t i;
-    YogoClass *loaded_cls;
+    YogoPackage *loaded_cls;
     YogoFunction *loaded_func;
 
     const char *path = yogo_get_string(yogo_pop_stack(interp));
@@ -81,7 +81,7 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
         name = strdup(buffer);
     }
 
-    loaded_cls = yogo_create_class(interp, name);
+    loaded_cls = yogo_create_package(interp, name);
     
     /* Constant pool */
     if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
@@ -129,10 +129,9 @@ void load_class(YogoInterp *interp, YogoClass *cls, YogoFunction *func) {
         loaded_func = yogo_create_native_function(interp, run_bytecode_interp, op_base);
         yogo_define_function(interp, loaded_cls, name, loaded_func);
         free(name);
-        free(op_base);
     }
     
-    yogo_define_class(interp, loaded_cls->name, loaded_cls);
+    yogo_define_package(interp, loaded_cls->name, loaded_cls);
     
     /* Initialize class */
     yogo_push_stack(interp, yogo_create_string(loaded_cls->name));

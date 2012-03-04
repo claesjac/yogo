@@ -8,7 +8,7 @@
 #ifndef __OP_H__
 #define __OP_H__
 
-#include "class.h"
+#include "package.h"
 
 #define OP(op) void op_ ## op(void *stack)
 
