@@ -1,3 +1,4 @@
 namespace Foo;
 
-fun 
+@x = 1..20;
+$x = 1..10 | 1.5;

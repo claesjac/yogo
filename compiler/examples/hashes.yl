@@ -1,2 +1,5 @@
-fun fibonnaci(a, b) {
+package Foo::Bar;
+
+sub foo {
+
 }
