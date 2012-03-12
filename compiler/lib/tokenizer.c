@@ -18,6 +18,34 @@ YogoTokenizer *yogo_tokenize(const char *src) {
 
 int yogo_keyword(const char *s, int l) {
     switch (*s) {
+        case 'a': {
+            if (l == 3 && s[1] == 'n' && s[2] == 'y') {
+                return TK_ANY;
+            }                        
+        }
+        break;
+        
+        case 'd': {
+            if (l == 3 && s[1] == 'b' && s[2] == 'l') {
+                return TK_DOUBLE;            
+            }
+        }
+        break;
+        
+        case 'i': {
+            if (l == 3 && s[1] == 'n' && s[2] == 't') {
+                return TK_INTEGER;
+            }
+        }
+        break;
+        
+        case 'm': {
+            if (l == 2 && s[1] == 'y') {
+                return TK_MY;
+            }
+        }
+        break;
+            
         case 'p': {
             if (l == 7 && strncmp(s, "package", 7) == 0) {
                 return TK_PACKAGE;
@@ -26,8 +54,25 @@ int yogo_keyword(const char *s, int l) {
         break;
         
         case 's': {
-            if (l == 3 && strncmp(s, "sub", 3) == 0) {
-                return TK_SUB;
+            if (l == 3) {
+                switch (s[1]) {
+                    case 't':
+                        if (s[2] == 'r') {
+                            return TK_STRING;
+                        }
+                    break;
+                    
+                    case 'u':
+                        if (s[2] == 'b') {
+                            return TK_SUB;                            
+                        }
+                    break;
+                }
+            }
+            else if (l == 5) {
+                if (strncmp(s, "shift", 5) == 0) {
+//                    return TK_SHIFT;
+                }
             }
         }
         break;
@@ -52,6 +97,22 @@ int yogo_next_token(YogoTokenizer *tok, int *token) {
             t = TK_SPACE;
             break;                                
         }
+        
+        /* TODO: Define what special vars we want */
+        case '$':
+            for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
+            t = TK_SCALAR_VAR;
+        break;
+        
+        case '@':
+            for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
+            t = TK_ARRAY_VAR;
+        break;
+        
+        case '%':
+            for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
+            t = TK_HASH_VAR;
+        break;
         
         case ';':
             t = TK_SEMI;

@@ -1,5 +1,8 @@
 package Foo::Bar;
 
-sub foo {
+my any $x;
+my %x;
+my int @x;
 
+sub foo {
 }
