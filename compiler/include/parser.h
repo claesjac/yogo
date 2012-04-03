@@ -5,19 +5,22 @@
 #include <stdint.h>
 
 #include "grammar.h"
+#include "emitter.h"
 
-struct YogoToken {
-    const char *str;
-    uint32_t    length;
-    uint32_t    type;
+struct YogocToken {
+    uint16_t    type;
+    uint16_t    length;
+    uint16_t    column;
+    uint16_t    lineno;
+    const char  *value;
 };
 
-typedef struct YogoToken YogoToken;
+typedef struct YogocToken YogocToken;
 
-void *yogo_ParseAlloc(void*(*)(size_t));
-void yogo_ParseFree(void *, void (*)(void *));
-void yogo_Parse(void *, int, YogoToken);
+void *yogoc_ParseAlloc(void*(*)(size_t));
+void yogoc_ParseFree(void *, void (*)(void *));
+void yogoc_Parse(void *, int, YogocToken *, YogocEmitter *);
 
-void yogo_parse_file(const char *path);
+void yogoc_parse_file(const char *path);
 
 #endif

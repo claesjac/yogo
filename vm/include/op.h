@@ -10,6 +10,6 @@
 
 #include "package.h"
 
-#define OP(op) void op_ ## op(void *stack)
+#define OP(op) void yogo_op_ ## op(YogoInterp *interp)
 
 #endif

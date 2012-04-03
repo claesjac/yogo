@@ -1,20 +1,22 @@
 #ifndef __TOKENIZER_H__
 #define __TOKENIZER_H__
 
+#include "parser.h"
+
 #include <unistd.h>
 #include <stdint.h>
 
-struct YogoTokenizer {
+struct YogocTokenizer {
     const char *src, *last_token;
     off_t       offset;
     uint32_t    lineno;
     uint32_t    column;
 };
 
-typedef struct YogoTokenizer YogoTokenizer;
+typedef struct YogocTokenizer YogocTokenizer;
 
-YogoTokenizer *yogo_tokenize(const char *);
-int yogo_next_token(YogoTokenizer *, int *);
-void yogo_free_tokenizer(YogoTokenizer *);
+YogocTokenizer *yogoc_tokenize(const char *);
+int yogoc_next_token(const char *, int *);
+void yogoc_free_tokenizer(YogocTokenizer *);
 
 #endif

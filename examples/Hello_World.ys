@@ -1,0 +1,7 @@
+#!/usr/bin/env yogo
+
+.func <clinit>
+    pushmark
+    load "Hello World\n";
+    print
+    return

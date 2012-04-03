@@ -8,6 +8,7 @@ use File::Find;
 use File::Path qw(make_path);
 use File::Spec::Functions qw(catfile catdir splitpath);
 use Getopt::Long qw(GetOptions);
+use Scalar::Util qw(looks_like_number);
 
 our $CurrentSource;
 sub report_error($) {
@@ -34,6 +35,16 @@ sub trim {
     my $r = shift;
     $r =~ s/\s//g;
     return $r;
+}
+
+sub cp_type_of($) {
+    my $v = shift;
+    if (looks_like_number $v) {
+        return 'i' if $v =~ /\d+$/;
+        return 'd';
+    }
+    
+    return 's';
 }
 
 my ($base_obj_dir, $verbose, $help, $root_dir);
@@ -81,14 +92,24 @@ for my $source (@sources) {
     my (%function, $current_function, $pc);
     my $label;
     my $ops;
+    my %cp;
+    my @cp;
+    
     while (<$in>) {
         chomp;
         
         # Skip comments
         next if /^#/;
         
+        # Constant pool
+        if (/^\.cp \s+ (\d+) \s+ (.*?)$/x) {
+            my $cpt = cp_type_of $2;
+            $cp[$1] = $2;
+            $cp{$2} = [$1, $cpt];
+        }
+        
         # Declares a new named class
-        if (/^\.namespace(?:\s+(.*?))$/) {
+        if (m/^\.namespace \s+ (.*?)$/x) {
             report_error "Namespace already set" if defined $namespace;
             undef $ops;
             $namespace = trim $1;
@@ -98,7 +119,7 @@ for my $source (@sources) {
         }
         
         # Declares a new function/sub/method
-        if (/^.fun(?:\s+(<?.*?>?))$/) {
+        if (m/^.func \s+ (<?.*?>?) $/x) {
             my $name = trim $1;
             report_error "Missing function name" unless defined $name;
             report_error "Invalid function name '$name'" unless is_valid_function_name($name);
@@ -123,19 +144,42 @@ for my $source (@sources) {
             my $instr = lc $1;
             report_error "Invalid instruction '$instr'" unless exists $Opcode{$instr};
                         
-            push $ops, [$Opcode{$instr}->{code}];
+            my $op = $Opcode{$instr};
+            
+            push $ops, [$op->{code}];
             $pc++;   
             
-            if ($Opcode{$instr}->{args}) {
-                my @args = split /\s*,\s*/, $_;
-                my $e = $Opcode{$instr}->{args};
-                my $g = @args;
-                report_error "Invalid arg count, expected $e but got $g" unless $e == $g;
+            if ($op->{args}) {
+                if ($op->{arg_types}->[0] eq 'cp') {
+                    my $i;
+                    # Constant pool item
+                    if (/^#(\d+)$/) {
+                        $i = $1;
+                    }
+                    else {
+                        # Check up if item exists, otherwise add it
+                        my ($v) = $_ =~ /^\s*(.*?)\s*$/;
+                        $i = exists $cp{$v} ? $cp{$v} : do {
+                            my $cpt = cp_type_of $v;
+                            $cp{$v} = @cp;
+                            $cp[$cp{$v}] = [$v, $cpt];
+                            @cp - 1;
+                        };                        
+                    }
+
+                    push $ops->[-1], $i;
+                }
+                else {
+                    my @args = split /\s*,\s*/, $_;
+                    my $e = $Opcode{$instr}->{args};
+                    my $g = @args;
+                    report_error "Invalid arg count, expected $e but got $g" unless $e == $g;
                 
-                for my $i (0..$#args) {
-                    if ($Opcode{$instr}->{arg_types}->[$i] eq 'addr') {
-                        push $ops->[-1], bless(\do {"\L$args[$i]"}, "Label");
-                        $pc++;
+                    for my $i (0..$#args) {
+                        if ($Opcode{$instr}->{arg_types}->[$i] eq 'addr') {
+                            push $ops->[-1], bless(\do {"\L$args[$i]"}, "Label");
+                            $pc++;
+                        }
                     }
                 }
             }
@@ -162,13 +206,23 @@ for my $source (@sources) {
     
     # Version (major, minor)
     print $out pack("C2", 0, 1);
+        
+    # constant pool (empty now)
+    print $out pack("n", scalar @cp);
+    for my $cp (@cp) {
+        print $out pack("a", $cp->[1]);
+        if ($cp->[1] eq 's') {
+            print $out pack("n", bytes::length $cp->[0]);
+            print $out $cp->[0];
+        }
+        else {
+            print $out pack(($cp->[1] eq 'd' ? "d" : "q"), $cp->[0]);
+        }
+    }
     
     # If it has a namespace then write that
-    print $out pack("n", bytes::length $namespace);
+    print $out pack("n", $namespace ? bytes::length $namespace : 0);
     print $out $namespace if $namespace;
-    
-    # constant pool (empty now)
-    print $out pack("n", 0);
     
     # number of functions
     print $out pack("n", scalar keys %function);

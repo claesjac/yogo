@@ -24,6 +24,9 @@ YogoInterp *yogo_create_interp(void) {
     interp->curr_stack_top = interp->stack;
 
     interp->classes = (Pvoid_t) NULL;
+    interp->constant_pool_index = (Pvoid_t) NULL;
+    interp->constant_pool_value = (Pvoid_t) NULL;
+    interp->next_constant_pool_index = 1;
     
     S_init_standard_packagees(interp);
     
@@ -78,3 +81,56 @@ void yogo_define_package(YogoInterp *interp, const char *name, YogoPackage *cls)
     JSLI(v, interp->classes, (const uint8_t *) name);    
     *v = cls;
 }
+
+int yogo_add_constant(YogoInterp *interp, YogoConstantPoolType type, size_t length, void *value) {    
+    Word_t *c;
+    uint32_t i;
+    int64_t iv;
+    double dv;
+    char *v;
+    YogoValue *yv;
+    
+    v = malloc(length + 1);
+    v[0] = type;
+    memcpy(&v[1], value, length);
+    
+    JHSG(c, interp->constant_pool_index, v, length + 1);
+    if (c == NULL) {
+        i = interp->next_constant_pool_index++;
+                
+        JHSI(c, interp->constant_pool_index, v, length + 1);
+        *c = i;
+        
+        JLI(c, interp->constant_pool_value, i);
+        
+        switch (type) {
+            case YCP_Integer:
+                memcpy(&iv, value, sizeof(int64_t));
+                yv = yogo_new_integer(iv);
+                *c = (Word_t) yv;
+            break;
+            
+            case YCP_Double:
+                memcpy(&dv, value, sizeof(double));
+                yv = yogo_new_double(dv);
+                *c = (Word_t) yv;
+            break;
+            
+            case YCP_String:
+                yv = yogo_new_string(length, (const char *) value);
+                *c = (Word_t) yv;
+            break;
+            
+            default:
+                YOGO_REPORT_ERROR("Invalid constant pool type: %d\n", type);
+        }
+            
+        return i;
+    }
+    else {
+        YOGO_REPORT_INFO("Item already exists\n");
+    }
+
+    return i;
+}
+

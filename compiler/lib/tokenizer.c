@@ -6,17 +6,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-YogoTokenizer *yogo_tokenize(const char *src) {
+YogocTokenizer *yogoc_tokenize(const char *src) {
     size_t l = strlen(src);
     
-    YogoTokenizer *tok = calloc(1, sizeof(YogoTokenizer));
+    YogocTokenizer *tok = calloc(1, sizeof(YogocTokenizer));
     tok->src = calloc(1, l + 2);
     memcpy((void *) tok->src, src, l);
 
     return tok;
 }
 
-int yogo_keyword(const char *s, int l) {
+int yogoc_keyword(const char *s, int l) {
     switch (*s) {
         case 'a': {
             if (l == 3 && s[1] == 'n' && s[2] == 'y') {
@@ -26,8 +26,20 @@ int yogo_keyword(const char *s, int l) {
         break;
         
         case 'd': {
-            if (l == 3 && s[1] == 'b' && s[2] == 'l') {
-                return TK_DOUBLE;            
+            switch (s[1]) {
+                case 'o': {
+                    if (l == 2) {
+                        return TK_DO;                        
+                    }
+                }
+                break;
+                
+                case 'b': {
+                    if (l == 3 && s[2] == 'l') {
+                        return TK_DOUBLE;
+                    }
+                }
+                break;
             }
         }
         break;
@@ -81,49 +93,59 @@ int yogo_keyword(const char *s, int l) {
     return 0;
 }
 
-int yogo_next_token(YogoTokenizer *tok, int *token) {
-    int i, c, t;
-    const char *s = tok->src + tok->offset;
-    tok->last_token = s;
+int yogoc_next_token(const char *s, int *t) {
+    int i, c;
+    
     /* Always start with 1 in length so we don't have to do this in each case */
     i = 1;
 
     switch (*s) {
         case ' ': case '\t': case '\n': case '\f': case '\r': {
-            tok->column++;
-            for (i = 1; isspace(s[i]); i++) {                
+            if (*s == '\n') {
             }
 
-            t = TK_SPACE;
-            break;                                
+            for (i = 1; isspace(s[i]); i++) {
+                if (s[i] == '\n') {
+                }
+            }
+
+            *t = TK_SPACE;
+            return i;
         }
+        break;                                
         
         /* TODO: Define what special vars we want */
         case '$':
             for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
-            t = TK_SCALAR_VAR;
+            *t = TK_SCALAR_VAR;
+            return i;
         break;
         
         case '@':
             for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
-            t = TK_ARRAY_VAR;
+            *t = TK_ARRAY_VAR;
+            return i;
         break;
         
         case '%':
             for (i = 1; s[i] == '_' || isalnum(s[i]); i++) {}    
-            t = TK_HASH_VAR;
+            *t = TK_HASH_VAR;
+            return i;
         break;
         
         case ';':
-            t = TK_SEMI;
+            *t = TK_SEMI;
+            return 1;
         break;
         
         case '{':
-            t = TK_OPEN_CURLY;
+            *t = TK_OPEN_CURLY;
+            return 1;
         break;
         
         case '}':
-            t = TK_CLOSE_CURLY;
+            *t = TK_CLOSE_CURLY;
+            return 1;
         break;
         
         case 'A'...'Z':
@@ -131,37 +153,35 @@ int yogo_next_token(YogoTokenizer *tok, int *token) {
         case '_': {
             for (i = 1; isalnum(s[i]); i++) {}
 
-            if ((t = yogo_keyword(s, i)) != 0) {
-                goto FOUND_TOKEN;
+            if ((*t = yogoc_keyword(s, i)) != 0) {
+                return i;
             }
 
-            t = TK_IDENTIFIER;
+            *t = TK_IDENTIFIER;
             
             REDO: if (s[i] == ':' && s[i + 1] == ':' && isalnum(s[i + 2])) {
                 i += 3;
                 for (; isalnum(s[i]); i++) {
                 }
 
-                t = TK_PKGNAME;
+                *t = TK_PKGNAME;
             
                 goto REDO;
             }
                 
+            return i;
         }
         break;
         
         default:
-            i = 0;
-            t = 0;
+            fprintf(stderr, "Unknown token: %s\n", s);
+            exit(1);
     }
 
-FOUND_TOKEN:
-    tok->offset += i;
-    *token = t;
-    
-    return i;
+    *t = 0;
+    return 0;
 }
 
-void yogo_free_tokenizer(YogoTokenizer *tokenizer) {
+void yogoc_free_tokenizer(YogocTokenizer *tokenizer) {
     free(tokenizer);
 }

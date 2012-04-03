@@ -16,6 +16,7 @@ typedef void (*YogoNative)(struct YogoInterp *, struct YogoPackage *cls, struct 
 
 struct YogoFunction {
     YogoNative callptr;
+    uint32_t op_count;
     void *data;
 };
 

@@ -1,0 +1,7 @@
+#!/usr/bin/env yogo
+
+.func <clinit>    
+    iconst_1
+    iconst_2
+    add
+    print

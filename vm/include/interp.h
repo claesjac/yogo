@@ -22,12 +22,24 @@
 struct YogoPackage;
 struct YogoFunction;
 
+typedef enum {
+    YCP_Integer,
+    YCP_Double,
+    YCP_String
+} YogoConstantPoolType;
+    
 struct YogoInterp {    
     YogoValue   **curr_stack_top;
     YogoValue   **stack_max;
     YogoValue   **stack;
     uint32_t    stack_size;
     
+    /* JudyHS with the constant pool */
+    Pvoid_t     constant_pool_index;
+    Pvoid_t     constant_pool_value;
+    uint32_t    next_constant_pool_index;
+    
+    /* JudySL with the package names */
     Pvoid_t     classes;
 };
 
@@ -44,5 +56,5 @@ extern YogoValue *yogo_peek_stack(YogoInterp *);
 
 extern void yogo_define_package(YogoInterp *, const char *, struct YogoPackage *);
 extern struct YogoPackage *yogo_find_package(YogoInterp *, const char *);
-
+extern int yogo_add_constant(YogoInterp *, YogoConstantPoolType, size_t, void *);
 #endif

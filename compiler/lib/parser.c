@@ -6,11 +6,11 @@
 #include <errno.h>
 #include <sys/stat.h>
 
-void yogo_parse_file(const char *path) {
+void yogoc_parse_file(const char *path) {
     FILE *in;
     void *parser;
-    YogoToken last_token;
-    YogoTokenizer *tokenizer;
+    YogocToken *t;
+    YogocEmitter *emit;    
     int token;
     uint32_t i = 0;
     char *src;
@@ -31,24 +31,33 @@ void yogo_parse_file(const char *path) {
         fprintf(stderr, "Failed to read all file at one go");
         exit(1);
     }
+        
+    parser = yogoc_ParseAlloc(malloc);
+    emit = yogoc_create_emitter();
     
-    tokenizer = yogo_tokenize(src);
-    parser = yogo_ParseAlloc(malloc);
-    
-    while ((last_token.length = yogo_next_token(tokenizer, &token)) != 0) {
-        fprintf(stderr, "Read token: %d %s\n", token, strndup(tokenizer->last_token, last_token.length));
-
+    while (src[i] != '\0') {
+        t = malloc(sizeof(YogocToken));
+                
+        t->length = yogoc_next_token(&src[i], &token);
+        t->type = token;
+        t->value = strndup(&src[i], t->length);
+        
+        i += t->length;
+        
         if (token == 0) {
             goto ABORT_PARSING;
         }
         
-        yogo_Parse(parser, token, last_token);
+        if (token == TK_SPACE) {
+            continue;
+        }
+
+        yogoc_Parse(parser, token, t, emit);
     }
 
-    yogo_Parse(parser, 0, last_token);
+    yogoc_Parse(parser, 0, t, emit);
 
 ABORT_PARSING:
-    yogo_ParseFree(parser, free);
-    yogo_free_tokenizer(tokenizer);
+    yogoc_ParseFree(parser, free);
     
 }

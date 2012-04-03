@@ -8,6 +8,7 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <stdlib.h>
 #include <stdint.h>
 
 typedef enum {
@@ -32,6 +33,12 @@ typedef enum {
 #define YV_IS_MAP(v) ((v->flags & YVt_MASK) == YVt_MAP)
 #define YV_IS_STRING(v) ((v->flags & YVt_MASK) == YVt_STRING)
 
+typedef enum {
+    VYt_CONSTANT = 8,   /* Constant */
+} YogoValueFlags;
+        
+#define YV_IS_CONSTANT(v) (v->flags & VYt_CONSTANT)
+
 struct YogoValue {
     uint16_t flags;
     uint32_t refcnt;
@@ -47,6 +54,7 @@ typedef struct YogoValue YogoValue;
 
 extern YogoValue *yogo_new_integer(const int64_t);
 extern YogoValue *yogo_new_double(const double);
+extern YogoValue *yogo_new_string(size_t len, const char *str);
 extern YogoValue *yogo_new_reference(YogoValue *);
 
 #endif

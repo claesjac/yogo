@@ -1,0 +1,297 @@
+State 0:
+          input ::= * stmtlist
+          stmtlist ::= * stmtlist stmt
+      (2) stmtlist ::= *
+
+                         input accept
+                      stmtlist shift  2
+                     {default} reduce 2
+
+State 1:
+          stmtlist ::= stmtlist * stmt
+          stmt ::= * package
+          stmt ::= * named_sub
+          stmt ::= * anon_sub
+          stmt ::= * var_decl
+          stmt ::= * do
+          package ::= * PACKAGE PKGNAME SEMI
+          package ::= * PACKAGE IDENTIFIER SEMI
+          named_sub ::= * SUB IDENTIFIER block
+          anon_sub ::= * SUB block
+          block ::= OPEN_CURLY stmtlist * CLOSE_CURLY
+          do ::= * DO block
+          var_decl ::= * MY type var SEMI
+
+                       PACKAGE shift  9
+                           SUB shift  5
+                   CLOSE_CURLY shift  26
+                            DO shift  6
+                            MY shift  3
+                          stmt shift  35
+                       package shift  34
+                     named_sub shift  33
+                      anon_sub shift  32
+                      var_decl shift  31
+                            do shift  30
+
+State 2:
+      (0) input ::= stmtlist *
+          stmtlist ::= stmtlist * stmt
+          stmt ::= * package
+          stmt ::= * named_sub
+          stmt ::= * anon_sub
+          stmt ::= * var_decl
+          stmt ::= * do
+          package ::= * PACKAGE PKGNAME SEMI
+          package ::= * PACKAGE IDENTIFIER SEMI
+          named_sub ::= * SUB IDENTIFIER block
+          anon_sub ::= * SUB block
+          do ::= * DO block
+          var_decl ::= * MY type var SEMI
+
+                             $ reduce 0
+                       PACKAGE shift  9
+                           SUB shift  5
+                            DO shift  6
+                            MY shift  3
+                          stmt shift  35
+                       package shift  34
+                     named_sub shift  33
+                      anon_sub shift  32
+                      var_decl shift  31
+                            do shift  30
+
+State 3:
+          var_decl ::= MY * type var SEMI
+          type ::= * INTEGER
+          type ::= * DOUBLE
+          type ::= * STRING
+          type ::= * HASH
+          type ::= * ARRAY
+          type ::= * ANY
+          type ::= * OBJECT
+     (25) type ::= *
+
+                       INTEGER shift  20
+                        DOUBLE shift  19
+                        STRING shift  18
+                          HASH shift  17
+                         ARRAY shift  16
+                           ANY shift  15
+                        OBJECT shift  14
+                          type shift  4
+                     {default} reduce 25
+
+State 4:
+          var_decl ::= MY type * var SEMI
+          var ::= * SCALAR_VAR
+          var ::= * HASH_VAR
+          var ::= * ARRAY_VAR
+
+                    SCALAR_VAR shift  23
+                      HASH_VAR shift  22
+                     ARRAY_VAR shift  21
+                           var shift  10
+
+State 5:
+          named_sub ::= SUB * IDENTIFIER block
+          anon_sub ::= SUB * block
+          block ::= * OPEN_CURLY stmtlist CLOSE_CURLY
+
+                    IDENTIFIER shift  7
+                    OPEN_CURLY shift  8
+                         block shift  13
+
+State 6:
+          block ::= * OPEN_CURLY stmtlist CLOSE_CURLY
+          do ::= DO * block
+
+                    OPEN_CURLY shift  8
+                         block shift  25
+
+State 7:
+          named_sub ::= SUB IDENTIFIER * block
+          block ::= * OPEN_CURLY stmtlist CLOSE_CURLY
+
+                    OPEN_CURLY shift  8
+                         block shift  27
+
+State 8:
+          stmtlist ::= * stmtlist stmt
+      (2) stmtlist ::= *
+          block ::= OPEN_CURLY * stmtlist CLOSE_CURLY
+
+                      stmtlist shift  1
+                     {default} reduce 2
+
+State 9:
+          package ::= PACKAGE * PKGNAME SEMI
+          package ::= PACKAGE * IDENTIFIER SEMI
+
+                       PKGNAME shift  12
+                    IDENTIFIER shift  11
+
+State 10:
+          var_decl ::= MY type var * SEMI
+
+                          SEMI shift  24
+
+State 11:
+          package ::= PACKAGE IDENTIFIER * SEMI
+
+                          SEMI shift  28
+
+State 12:
+          package ::= PACKAGE PKGNAME * SEMI
+
+                          SEMI shift  29
+
+State 13:
+     (11) anon_sub ::= SUB block *
+
+                     {default} reduce 11
+
+State 14:
+     (24) type ::= OBJECT *
+
+                     {default} reduce 24
+
+State 15:
+     (23) type ::= ANY *
+
+                     {default} reduce 23
+
+State 16:
+     (22) type ::= ARRAY *
+
+                     {default} reduce 22
+
+State 17:
+     (21) type ::= HASH *
+
+                     {default} reduce 21
+
+State 18:
+     (20) type ::= STRING *
+
+                     {default} reduce 20
+
+State 19:
+     (19) type ::= DOUBLE *
+
+                     {default} reduce 19
+
+State 20:
+     (18) type ::= INTEGER *
+
+                     {default} reduce 18
+
+State 21:
+     (17) var ::= ARRAY_VAR *
+
+                     {default} reduce 17
+
+State 22:
+     (16) var ::= HASH_VAR *
+
+                     {default} reduce 16
+
+State 23:
+     (15) var ::= SCALAR_VAR *
+
+                     {default} reduce 15
+
+State 24:
+     (14) var_decl ::= MY type var SEMI *
+
+                     {default} reduce 14
+
+State 25:
+     (13) do ::= DO block *
+
+                     {default} reduce 13
+
+State 26:
+     (12) block ::= OPEN_CURLY stmtlist CLOSE_CURLY *
+
+                     {default} reduce 12
+
+State 27:
+     (10) named_sub ::= SUB IDENTIFIER block *
+
+                     {default} reduce 10
+
+State 28:
+      (9) package ::= PACKAGE IDENTIFIER SEMI *
+
+                     {default} reduce 9
+
+State 29:
+      (8) package ::= PACKAGE PKGNAME SEMI *
+
+                     {default} reduce 8
+
+State 30:
+      (7) stmt ::= do *
+
+                     {default} reduce 7
+
+State 31:
+      (6) stmt ::= var_decl *
+
+                     {default} reduce 6
+
+State 32:
+      (5) stmt ::= anon_sub *
+
+                     {default} reduce 5
+
+State 33:
+      (4) stmt ::= named_sub *
+
+                     {default} reduce 4
+
+State 34:
+      (3) stmt ::= package *
+
+                     {default} reduce 3
+
+State 35:
+      (1) stmtlist ::= stmtlist stmt *
+
+                     {default} reduce 1
+
+----------------------------------------------------
+Symbols:
+    0: $:
+    1: PACKAGE
+    2: PKGNAME
+    3: SEMI
+    4: IDENTIFIER
+    5: SUB
+    6: OPEN_CURLY
+    7: CLOSE_CURLY
+    8: DO
+    9: MY
+   10: SCALAR_VAR
+   11: HASH_VAR
+   12: ARRAY_VAR
+   13: INTEGER
+   14: DOUBLE
+   15: STRING
+   16: HASH
+   17: ARRAY
+   18: ANY
+   19: OBJECT
+   20: error:
+   21: input: <lambda> PACKAGE SUB DO MY
+   22: stmtlist: <lambda> PACKAGE SUB DO MY
+   23: stmt: PACKAGE SUB DO MY
+   24: package: PACKAGE
+   25: named_sub: SUB
+   26: anon_sub: SUB
+   27: var_decl: MY
+   28: do: DO
+   29: block: OPEN_CURLY
+   30: type: <lambda> INTEGER DOUBLE STRING HASH ARRAY ANY OBJECT
+   31: var: SCALAR_VAR HASH_VAR ARRAY_VAR

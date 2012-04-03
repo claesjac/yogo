@@ -55,8 +55,8 @@ OPCODE( 71, unshift,  0, )
 OPCODE( 72, pop,  0, )
 OPCODE( 73, push,  0, )
 OPCODE( 74, peek,  0, )
-OPCODE( 75, dup, 0, )
 OPCODE( 76, splice, 0, )
+OPCODE( 77, length, 0, )
 
 /* Map/List */
 OPCODE( 80, get, 0, )
@@ -66,12 +66,20 @@ OPCODE( 81, set, 0, )
 OPCODE( 83, keys, 0, )
 OPCODE( 84, values, 0, )
 
-/* Stack */
-OPCODE( 76, load,  1, num)
-OPCODE( 76, store, 1, num)
+/* Vars */
+OPCODE(100, load, 1, cp)
 
 /* Io */
-OPCODE(  100, print,  0, )
+OPCODE(102, print,  0, )
+
+/* Math */
+OPCODE(110, add, 0, )
+OPCODE(111, sub, 0, )
+OPCODE(112, mult, 0, )
+OPCODE(113, div, 0, )
+OPCODE(114, mod, 0, )
+OPCODE(115, neg, 0, )
+OPCODE(116, abs, 0, )
 
 };
 

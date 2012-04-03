@@ -44,10 +44,11 @@ void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
     char buffer[LOAD_BUFFER_SIZE];
     char *name;
     uint16_t major, minor, function_count;
-    uint16_t length;
+    uint16_t length, cp_items;
     uint16_t *op_base;
     uint32_t op_count;
     uint32_t i;
+    int x, y, z;
     YogoPackage *loaded_cls;
     YogoFunction *loaded_func;
 
@@ -60,7 +61,7 @@ void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
     
     /* Header: magic value (4 bytes), major version (1 byte), minor version (1) byte */
     memset(buffer, 0, LOAD_BUFFER_SIZE);
-    if (fread(buffer, sizeof(char), 8, in) != 8) { 
+    if (fread(buffer, sizeof(char), 6, in) != 6) { 
         YOGO_REPORT_ERROR("Failed to read header because of: %s\n", strerror(errno));
     }
     if (strncmp(buffer, MAGIC_IDENTIFIER, 4) != 0) {
@@ -69,9 +70,53 @@ void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
     
     major = (int) buffer[4];
     minor = (int) buffer[5];
-        
+    
+    /* Constant pool items */
+    if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
+        YOGO_REPORT_ERROR("Failed to read constant pool length because of: %s\n", strerror(errno));
+    }
+    memcpy(&cp_items, buffer, sizeof(uint16_t));
+    cp_items = htons(cp_items);
+    YOGO_REPORT_INFO("Constant pool items: %d\n", cp_items);
+    for (i = 1; i <= cp_items; i++) { 
+        x = fgetc(in);
+        YOGO_REPORT_INFO("Constant pool item %d type: %c\n", cp_items, x);
+               
+        switch(x) {
+            case 'i':
+            break;
+            
+            case 'd':
+            break;
+            
+            case 's':
+                if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
+                    YOGO_REPORT_ERROR("Failed to read constant pool length because of: %s\n", strerror(errno));
+                }
+                memcpy(&length, buffer, sizeof(uint16_t));
+                length = htons(length);
+                if (length) {
+                    if (fread(buffer, sizeof(char), length, in) != length) {
+                        YOGO_REPORT_ERROR("Failed to read name because of: %s\n", strerror(errno));
+                    }
+                    buffer[length] = '\0';
+                    name = strdup(buffer);
+                }
+                
+                x = yogo_add_constant(interp, YCP_String, length, name);
+                YOGO_REPORT_INFO("Constant is: %d\n", x);
+            break;
+            
+            default:
+                YOGO_REPORT_ERROR("Constant type %c unsupported\n", x);
+        }
+    }
+    
     /* Name of class if any */
-    memcpy(&length, buffer + 6, sizeof(uint16_t));
+    if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
+        YOGO_REPORT_ERROR("Failed to read constant pool length because of: %s\n", strerror(errno));
+    }
+    memcpy(&length, buffer, sizeof(uint16_t));
     length = htons(length);
     if (length) {
         if (fread(buffer, sizeof(char), length, in) != length) {
@@ -80,14 +125,12 @@ void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
         buffer[length] = '\0';
         name = strdup(buffer);
     }
+    else {
+        name = "";
+    }
 
     loaded_cls = yogo_create_package(interp, name);
-    
-    /* Constant pool */
-    if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
-        YOGO_REPORT_ERROR("Failed to read constant pool length because of: %s\n", strerror(errno));
-    }
-    
+        
     /* Number of functions */
     if (fread(buffer, sizeof(uint16_t), 1, in) != 1) {
         YOGO_REPORT_ERROR("Failed to read function count\n");
@@ -127,6 +170,7 @@ void load_package(YogoInterp *interp, YogoPackage *cls, YogoFunction *func) {
         }
         
         loaded_func = yogo_create_native_function(interp, run_bytecode_interp, op_base);
+        loaded_func->op_count = op_count;
         yogo_define_function(interp, loaded_cls, name, loaded_func);
         free(name);
     }

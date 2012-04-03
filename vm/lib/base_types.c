@@ -1,5 +1,6 @@
 #include "types.h"
 
+#include <string.h>
 #include <stdlib.h>
 
 #define newYogoValue(flags) malloc
@@ -28,4 +29,12 @@ YogoValue *yogo_new_reference(YogoValue *dst) {
     dst->refcnt++;
     v->val.pval = dst;
     return v;    
+}
+
+YogoValue *yogo_new_string(size_t length, const char *str) {
+    YogoValue *v = S_new_yogo_value(YVt_STRING);
+    v->val.pval = malloc(length + 1);
+    memcpy(v->val.pval, str, length);
+    ((char *) v->val.pval)[length] = '\0';
+    return v;
 }
